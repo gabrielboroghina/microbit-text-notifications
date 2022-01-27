@@ -8,3 +8,4 @@ edition = "2018"
 kernel = { path = "../../tock/kernel" }
 enum_primitive = { path = "../../tock/libraries/enum_primitive" }
 tickv = { path = "../../tock/libraries/tickv" }
+capsules = { path = "../../tock/capsules" }

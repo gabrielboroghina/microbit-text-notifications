@@ -117,6 +117,12 @@ pub struct MicroBit {
 
     scheduler: &'static RoundRobinSched<'static>,
     systick: cortexm4::systick::SysTick,
+
+    led_matrix_text: &'static drivers::led_matrix_text::LedMatrixText<
+        'static,                                                                        // 'a
+        capsules::virtual_alarm::VirtualMuxAlarm<'static, nrf52833::rtc::Rtc<'static>>, // A
+        nrf52::gpio::GPIOPin<'static>,
+    >,
 }
 
 impl SyscallDriverLookup for MicroBit {
@@ -141,6 +147,7 @@ impl SyscallDriverLookup for MicroBit {
             capsules::sound_pressure::DRIVER_NUM => f(Some(self.sound_pressure)),
             drivers::network::DRIVER_NUM => f(Some(self.network)),
             kernel::ipc::DRIVER_NUM => f(Some(&self.ipc)),
+            drivers::led_matrix_text::DRIVER_NUM => f(Some(self.led_matrix_text)),
             _ => f(None),
         }
     }
@@ -601,6 +608,28 @@ pub unsafe fn main() {
     let scheduler = components::sched::round_robin::RoundRobinComponent::new(&PROCESSES)
         .finalize(components::rr_component_helper!(NUM_PROCS));
 
+    let virtual_alarm_hello = static_init!(
+        capsules::virtual_alarm::VirtualMuxAlarm<'static, nrf52833::rtc::Rtc>,
+        capsules::virtual_alarm::VirtualMuxAlarm::new(mux_alarm)
+    );
+
+    let led_matrix_text = static_init!(
+        drivers::led_matrix_text::LedMatrixText<
+            'static,                                                                        // 'a
+            capsules::virtual_alarm::VirtualMuxAlarm<'static, nrf52833::rtc::Rtc<'static>>, // A
+            nrf52::gpio::GPIOPin<'static>,
+        >,
+        drivers::led_matrix_text::LedMatrixText::new(
+            virtual_alarm_hello,
+            board_kernel.create_grant(
+                drivers::led_matrix_text::DRIVER_NUM,
+                &memory_allocation_capability
+            ),
+            led
+        )
+    );
+    virtual_alarm_hello.set_alarm_client(led_matrix_text);
+
     let microbit = MicroBit {
         ble_radio,
         console,
@@ -622,9 +651,9 @@ pub unsafe fn main() {
             kernel::ipc::DRIVER_NUM,
             &memory_allocation_capability,
         ),
-
         scheduler,
         systick: cortexm4::systick::SysTick::new_with_calibration(64000000),
+        led_matrix_text,
     };
 
     let chip = static_init!(
