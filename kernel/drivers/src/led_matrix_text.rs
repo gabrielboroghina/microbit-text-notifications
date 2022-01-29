@@ -514,7 +514,7 @@ pub struct LedMatrixText<'a, A: Alarm<'a>, L: Pin> {
 #[derive(Copy, Clone)]
 enum Status {
     Idle,
-    Processing(usize, usize, ProcessId, u32) // idx, len, process_id
+    Processing(usize, usize, ProcessId, u32, bool) // idx, len, process_id, delay, repeat
 }
 
 #[derive(Default)]
@@ -533,6 +533,16 @@ impl<'a, A: Alarm<'a>, L: Pin> LedMatrixText<'a, A, L> {
             led_matrix,
             status: Cell::new(Status::Idle),
         }
+    }
+
+    fn cleanup(&self) {
+        // Stop all LEDs
+        for c in 0..self.led_matrix.cols_len() {
+            for r in 0..self.led_matrix.rows_len() {
+                let _ = self.led_matrix.off(c, r);
+            }
+        }
+        self.status.set(Status::Idle);
     }
 
     fn display_char(&self, ch: u8) {
@@ -618,34 +628,33 @@ impl<'a, A: Alarm<'a>, L: Pin> LedMatrixText<'a, A, L> {
     fn display_chars(&self) {
         match self.status.get() {
             Status::Idle => {
-                unreachable!();
+                // Do nothing
             }
-            Status::Processing(idx, len, process_id, delay) => {
-                if idx < len {
-                    // Show the first remaining letter
+            Status::Processing(idx, len, process_id, delay, repeat) => {
+                let i = if repeat == true && idx >= len { 0 } else { idx };
+
+                if i < len {
+                    // Show the next letter
 
                     let _res = self.access_grant.enter(process_id, |app_storage, _upcalls_table| {
                         // Result<Result<(), ErrorCode>, Error>
                         app_storage.text.enter(|text| {
-                            self.display_char(text[idx].get());
+                            if i < text.len() {
+                                self.display_char(text[i].get());
+                            }
                         })
                     });
 
-                    self.status.set(Status::Processing(idx + 1, len, process_id, delay));
+                    self.status.set(Status::Processing(i + 1, len, process_id, delay, repeat));
                     self.alarm.set_alarm(self.alarm.now(), self.alarm.ticks_from_ms(delay));
-                } else {
+                }
+                else if repeat == false {
                     // Return in userspace
                     let _ = self.access_grant.enter(process_id, |_app_storage, upcalls_table| {
                         let _ = upcalls_table.schedule_upcall(0, (0, 0, 0));
                     });
 
-                    // Stop all LEDs
-                    for c in 0..self.led_matrix.cols_len() {
-                        for r in 0..self.led_matrix.rows_len() {
-                            let _ = self.led_matrix.off(c, r);
-                        }
-                    }
-                    self.status.set(Status::Idle);
+                    self.cleanup();
                 }
             }
         }
@@ -657,19 +666,26 @@ impl<'a, A: Alarm<'a>, L: Pin> SyscallDriver for LedMatrixText<'a, A, L> {
         &self,
         command_num: usize,
         delay: usize,
-        _r3: usize,
+        mode: usize,
         process_id: ProcessId,
     ) -> CommandReturn {
         match command_num {
             0 => CommandReturn::success(),
             1 => {
                 if let Status::Idle = self.status.get() {
-                    let res = self.access_grant.enter(process_id, |app_storage, _upcalls_table| {
+                    let res = self.access_grant.enter(process_id, |app_storage, upcalls_table| {
                         // Result<Result<(), ErrorCode>, Error>
                         app_storage.text.enter(|text| {
+                            if mode == 1 {
+                                // Return in userspace
+                                // let _ = upcalls_table.schedule_upcall(0, (0, 0, 0));
+                            }
+
                             // In process of displaying the text
-                            self.status.set(Status::Processing(1, text.len(), process_id, delay as u32));
-                            self.display_char(text[0].get());
+                            if text.len() > 0 {
+                                self.display_char(text[0].get());
+                            }
+                            self.status.set(Status::Processing(1, text.len(), process_id, delay as u32, mode == 1));
                             self.alarm.set_alarm(self.alarm.now(), self.alarm.ticks_from_ms(delay as u32));
                         })
                     });
@@ -681,6 +697,11 @@ impl<'a, A: Alarm<'a>, L: Pin> SyscallDriver for LedMatrixText<'a, A, L> {
                 } else {
                     CommandReturn::failure(ErrorCode::BUSY)
                 }
+            },
+            2 => {
+                self.status.set(Status::Processing(0, 0, process_id, 0, true));
+                self.cleanup();
+                CommandReturn::success()
             },
             _ => CommandReturn::failure(ErrorCode::NOSUPPORT),
         }
