@@ -36,7 +36,13 @@ MongoClient
         
         // UI (method: POST)
         app.post('/notifications', (req, res) => {
-            notificationsCollection.insertOne(req.body)
+            notificationsCollection.insertOne(
+                    {
+                        name: req.body.name,
+                        notification: req.body.notification,
+                        timestamp: Date.now() / 1000
+                    }
+                )
                 .then(result => {
                     console.log(result)
                     res.redirect('/notifications')
@@ -51,11 +57,13 @@ MongoClient
                 {
                     $set: {
                         name: req.body.name,
-                        notification: req.body.notification
+                        notification: req.body.notification,
+                        timestamp: req.body.timestamp
                     }
                 },
                 {
-                    upsert: true
+                    upsert: true,
+                    returnNewDocument: true
                 })
                 .then(result => {
                     console.log(result)
@@ -69,16 +77,15 @@ MongoClient
                 { name: req.body.name }
             )
             .then(result => {
-                console.log("Nr " + result.deletedCount )
                 if (result.deletedCount === 0) {
                     return res.json('No notifications to delete').status(201)
                 }
-                res.json('Deleted notification with name: ' + req.body.name).status(201)
+                res.json('Deleted notification with name: ' + req.body.name).status(200)
             })
             .catch(error => console.error(error))
         })
 
-        // GET
+       // API (method: GET, format: JSON)
         app.get('/api/notifications', (req, res) => {
             db.collection('notifications').find().toArray()
                 .then(results => {

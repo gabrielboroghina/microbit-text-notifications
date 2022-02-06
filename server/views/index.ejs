@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   </head>
 
-  <body>
+  <body style="background-color:rgba(46, 138, 184, 0.2);">
     <div class="container-fluid">
       <!-- TITLE -->
       <br>
@@ -56,6 +56,7 @@
               </p>
               <input id="namePut" class="form-control" type="text" placeholder="eg: MorningNotification" name="namePut" />
               <input id="notificationPut" class="form-control" type="text" placeholder="eg: Wake up at 08:00 and prepare for the day!" name="notificationPut" />
+              <input id="timestampPut" class="form-control" type="text" placeholder="eg: 1644163487" name="timestampPut" />
               <br>
               <button id="update_button" class="btn btn-primary">Update</button>
             </div>
@@ -96,6 +97,9 @@
                     <br>
                     <b> Body: </b>
                     <span><%= notifications[i].notification %></span>
+                    <br>
+                    <b> Timestamp: </b>
+                    <span><%= notifications[i].timestamp %></span>
                     <br>
                   </li>
                   <br>

@@ -3,12 +3,14 @@ update.addEventListener('click', _ => {
 
     const nameString = document.getElementById('namePut').value
     const notificationString = document.getElementById('notificationPut').value
+    const timestampString = document.getElementById('timestampPut').value
     fetch('/notifications', {
         method: 'put',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             name: nameString,
-            notification: notificationString
+            notification: notificationString,
+            timestamp: timestampString
         })
     })
     .then(res => {
