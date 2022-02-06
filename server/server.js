@@ -1,5 +1,6 @@
 const connString = "mongodb+srv://saiot:saiot@notifications.cab90.mongodb.net/notifications?retryWrites=true&w=majority"
 const port = 3000
+const pollInterval = 60
 
 const express = require('express');
 const bodyParser= require('body-parser')
@@ -26,7 +27,8 @@ MongoClient
 
         // UI (method: GET)
         app.get('/notifications', (req, res) => {
-            db.collection('notifications').find().toArray()
+            const timeRef = (Date.now() / 1000 - pollInterval) | 0
+            db.collection('notifications').find( { timestamp: { $gt: timeRef } } ).toArray()
                 .then(results => {
                     console.log(results)
                     res.render('index.ejs', { notifications: results })
@@ -40,7 +42,7 @@ MongoClient
                     {
                         name: req.body.name,
                         notification: req.body.notification,
-                        timestamp: Date.now() / 1000
+                        timestamp: Date.now() / 1000 | 0
                     }
                 )
                 .then(result => {
@@ -58,7 +60,7 @@ MongoClient
                     $set: {
                         name: req.body.name,
                         notification: req.body.notification,
-                        timestamp: req.body.timestamp
+                        timestamp: parseInt(req.body.timestamp)
                     }
                 },
                 {
@@ -87,7 +89,8 @@ MongoClient
 
        // API (method: GET, format: JSON)
         app.get('/api/notifications', (req, res) => {
-            db.collection('notifications').find().toArray()
+            const timeRef = (Date.now() / 1000 - pollInterval) | 0
+            db.collection('notifications').find( { timestamp: { $gt: timeRef } } ).toArray()
                 .then(results => {
                     console.log(results)
                     res.json(results)
