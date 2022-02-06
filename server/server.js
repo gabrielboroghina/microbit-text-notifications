@@ -91,7 +91,7 @@ MongoClient
        // API (method: GET, format: JSON)
         app.get('/api/notifications', (req, res) => {
             const timeRef = (Date.now() / 1000 - pollInterval) | 0
-            db.collection('notifications').find( { timestamp: { $gt: timeRef } } ).toArray()
+            db.collection('notifications').find( { timestamp: { $gt: timeRef } } ).limit(1).next()
                 .then(results => {
                     console.log(results)
                     res.json(results)
