@@ -14,7 +14,15 @@ while True:
 
     # Check if the input is an HTTP request to be performed by the proxy
     if re.match("(GET)|(POST)", req_str):
+        if re.match("(POST)", req_str):
+            # Wait for the body
+            req += ser.readline()
+            req += ser.readline()
+            req += ser.readline()
+            req += ser.readline()
+
         print("> Performing HTTP API request...")
+        print(req)
 
         host_match = re.search("https?:\/\/([^\s:]*)(\:([0-9]*))?.*", req_str)
         if host_match is None:

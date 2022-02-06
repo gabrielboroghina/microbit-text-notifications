@@ -83,20 +83,26 @@ impl<'a> SyscallDriver for Network<'a> {
                                 // buf[index].get() -> u8
                                 if 5 + address.len() <= buffer.len() {
 
-                                    address.copy_to_slice(&mut buffer[5..address.len() + 5]);
-                                    buffer[5 + address.len()] = ' ' as u8;
+                                    address.copy_to_slice(&mut buffer[5..5 + address.len()]);
 
                                     if app_storage.data_out.len() > 0 {
                                         // POST
                                         app_storage.data_out.enter(move |data_out| {
-                                            if 5 + address.len() + data_out.len() <= buffer.len() {
 
-                                                data_out.copy_to_slice(&mut buffer[5 + address.len() + 1..5 + address.len() + 1 + data_out.len()]);
+                                            let len1 = 5 + address.len();
+                                            let len2 = len1 + 51 + data_out.len();
+
+                                            if len2 + 2 <= buffer.len() {
 
                                                 &buffer[0..5].copy_from_slice("POST ".as_bytes());
-                                                buffer[5 + address.len() + 1 + data_out.len()] = '\n' as u8;
+                                                &buffer[len1..len1 + 51].copy_from_slice("\r\nContent-Type: text/plain\r\nContent-Length: 000\r\n\r\n".as_bytes());
+                                                buffer[len1 + 44] = (data_out.len() / 100) as u8 + '0' as u8;
+                                                buffer[len1 + 45] = (data_out.len() / 10 % 10) as u8 + '0' as u8;
+                                                buffer[len1 + 46] = (data_out.len() % 10) as u8 + '0' as u8;
+                                                data_out.copy_to_slice(&mut buffer[len1 + 51..len2]);
+                                                &buffer[len2..len2 + 2].copy_from_slice("\r\n".as_bytes());
 
-                                                if let Err((error, buffer)) = self.uart.transmit_buffer(buffer, 5 + address.len() + 1 + data_out.len() + 1) {
+                                                if let Err((error, buffer)) = self.uart.transmit_buffer(buffer, len2 + 2) {
                                                     self.buffer.replace(buffer);
                                                     Err(error)
                                                 }

@@ -41,7 +41,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
       // Button B: perform a POST request
       char* body_buffer = (char*) calloc(1024, sizeof(char));
       strcpy(body_buffer, "test body");
-      network_post("http://www.google.com/", body_buffer);
+      network_post("http://192.168.100.62:3000/", body_buffer);
     }
   }
 }
