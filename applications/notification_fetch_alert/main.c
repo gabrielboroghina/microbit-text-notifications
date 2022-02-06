@@ -68,38 +68,15 @@ static void get_notifications()
             printf("No new notification\n");
         }
 
-        delay_ms(10000);
+        delay_ms(60000);
     } while (true);
 }
 
-// Callback for button presses.
-//   btn_num: The index of the button associated with the callback
-//   val: 1 if pressed, 0 if depressed
-static void button_callback(int btn_num, int val, int arg2, void *ud)
-{
-    if (val == 1) {
-        if (btn_num == 0) {
-            // Button A: perform a GET request
-            get_notifications();
-        } //else {
-        //     // Button B: perform a POST request
-        //     char* body_buffer = (char*) calloc(1024, sizeof(char));
-        //     strcpy(body_buffer, "test body");
-        //     network_post("http://www.google.com/", body_buffer);
-        // }
-    }
-}
-
 int main(void) {
-  if (driver_exists(DRIVER_NUM_NETWORK) && driver_exists(DRIVER_NUM_LED_TEXT)) {
-    // Register actions on buttons
-    button_subscribe(button_callback, NULL);
-    button_enable_interrupt(0);
-    button_enable_interrupt(1);
-  }
-  else
-  {
-    printf("No network or led matrix driver\n");
-  }
-  return 0;
+    if (driver_exists(DRIVER_NUM_NETWORK) && driver_exists(DRIVER_NUM_LED_TEXT)) {
+        get_notifications();
+    } else {
+        printf("No network or led matrix driver\n");
+    }
+    return 0;
 }
