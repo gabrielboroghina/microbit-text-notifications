@@ -1,0 +1,52 @@
+<!-- index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notifications App</title>
+  </head>
+
+  <body>
+    <h1>Notifications center</h1>
+
+    <form action="/notifications" method="POST">
+      <input type="text" placeholder="name" name="name" />
+      <input type="text" placeholder="notification" name="notification" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <h2> Notifications </h2>
+
+    <ul class="notifications">
+      <!-- Loop through notifications -->
+      <% for(var i = 0; i < notifications.length; i++) {%>
+        <li class="notifications">
+          <!-- Output name from the iterated notifications object -->
+          <span><%= notifications[i].name %></span>:
+          <!-- Output notification from the iterated notifications object -->
+          <span><%= notifications[i].notification %></span>
+        </li>
+      <% } %>
+    </ul>
+    
+    <div>
+        <h2>Update</h2>
+        <p>
+          Update the body of a notification.
+        </p>
+        <button id="update_button">Update</button>
+    </div>
+
+    <div>
+        <h2>Delete</h2>
+        <p>
+          Delete a notification.
+        </p>
+        <button id="delete-button">Delete</button>
+    </div>
+
+    <div id="message"></div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
