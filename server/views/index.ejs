@@ -1,0 +1,123 @@
+<!-- index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notifications App</title>
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  </head>
+
+  <body style="background-color:rgba(46, 138, 184, 0.2);">
+    <div class="container-fluid">
+      <!-- TITLE -->
+      <br>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="card">
+            <div class="card-header">Notifications Center Admins</div>
+            <div class="card-body">
+              <li>Gabriel Boroghină</li>
+              <li>Mihaela Catrina</li>
+              <li>Andrei Smarandoiu</li>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
+      <!-- POST -->
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="card">
+            <div class="card-header">
+              POST notifications
+            </div>
+            <div class="card-body">
+              <form action="/notifications" method="POST">
+                <input class="form-control" type="text" placeholder="eg: MorningNotification" name="name" />
+                <input class="form-control" type="text" placeholder="eg: Wake up at 08:00 and prepare for the day!" name="notification" />
+                <br>
+                <button class="btn btn-primary">Send</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- PUT -->
+        <div class="col-sm-4">
+          <div class="card">
+            <div class="card-header">PUT notifications</div>
+            <div class="card-body">
+              <p>
+                Update a notification by selecting notification name and a new body for the notification.
+                If the name does not exist, a new notification is created.
+              </p>
+              <input id="namePut" class="form-control" type="text" placeholder="eg: MorningNotification" name="namePut" />
+              <input id="notificationPut" class="form-control" type="text" placeholder="eg: Wake up at 08:00 and prepare for the day!" name="notificationPut" />
+              <input id="timestampPut" class="form-control" type="text" placeholder="eg: 1644163487" name="timestampPut" />
+              <br>
+              <button id="update_button" class="btn btn-primary">Update</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DELETE -->
+        <div class="col-sm-4">
+          <div class="card">
+            <div class="card-header">DEL notifications</div>
+            <div class="card-body">
+              <p>
+                Delete a notification based on the provided name.
+              </p>
+              <input id="nameDelete" class="form-control" type="text" placeholder="eg: MorningNotification" name="nameDelete" />
+              <br>
+              <button id="delete-button" class="btn btn-primary">Delete</button>
+              <div id="message"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
+      <!-- GET -->
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="card">
+            <div class="card-header">
+              GET notifications
+            </div>
+            <div class="card-body">
+              <p>
+                Get a list of notifications emitted in the last 1 minute. To get all messages, increase the pollInterval variable.
+              </p>
+              <ul class="notifications">
+                <% for(var i = 0; i < notifications.length; i++) {%>
+                  <li class="notifications">
+                    <b>Name: </b>
+                    <span><%= notifications[i].name %></span>
+                    <br>
+                    <b> Body: </b>
+                    <span><%= notifications[i].notification %></span>
+                    <br>
+                    <b> Timestamp: </b>
+                    <span><%= notifications[i].timestamp %></span>
+                    <br>
+                  </li>
+                  <br>
+                <% } %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>
