@@ -265,7 +265,7 @@ impl<'a> ReceiveClient for Network<'a> {
                                 data_in[self.response_curr_idx.get()].set(rx_buffer[0]);
                                 self.response_curr_idx.set(self.response_curr_idx.get() + 1);
                             }
-                            if rx_buffer[0] == 0 {
+                            if rx_buffer[0] == 0 && self.response_curr_idx.get() < data_in.len() {
                                 data_in[self.response_curr_idx.get()].set(0);
                             }
                         });
