@@ -101,9 +101,8 @@ MongoClient
 
         // UI (method: PUT)
         app.put('/api/snooze', (req, res) => {
-            
-            // const t = db.collection('notifications').find( { timestamp: { $gt: timeRef } } ).toArray()
-            const t = db.collection('notifications')
+
+            db.collection('notifications')
                 .find( { timestamp: { $lt: Date.now() / 1000 | 0 } } )
                 .sort( { timestamp : -1 } )
                 .limit(1)
@@ -126,12 +125,12 @@ MongoClient
                         })
                         .then(result => {
                             console.log(result)
-                            res.json('Success')
+                            res.json('Managed to change the timestamp.')
                         })
-                        .catch(error => console.error(error))
+                        .catch(error => res.json(error))
                 })
-                .catch(error => console.error(error))
+                .catch(error => res.json(error))
 
         })
     })
-    .catch(error => console.error(error))
+    .catch(error => res.json(error))
