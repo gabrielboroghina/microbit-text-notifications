@@ -69,6 +69,7 @@ MongoClient
                 })
                 .then(result => {
                     console.log(result)
+                    res.json('Success')
                 })
                 .catch(error => console.error(error))
         })
@@ -96,6 +97,41 @@ MongoClient
                     res.json(results)
                 })
                 .catch(error => console.error(error))
+        })
+
+        // UI (method: PUT)
+        app.put('/api/snooze', (req, res) => {
+            
+            // const t = db.collection('notifications').find( { timestamp: { $gt: timeRef } } ).toArray()
+            const t = db.collection('notifications')
+                .find( { timestamp: { $lt: Date.now() / 1000 | 0 } } )
+                .sort( { timestamp : -1 } )
+                .limit(1)
+                .next()
+                .then(notif => {
+                    const newTimestamp = (Date.now() / 1000 + req.body.snooze) | 0
+                    console.log("Updating notification: " + notif.name +
+                    " from timestamp: " + notif.timestamp +
+                    " from timestamp: " + newTimestamp)
+                    
+                    notificationsCollection.findOneAndUpdate(
+                        { timestamp: notif.timestamp },
+                        {
+                            $set: {
+                                timestamp: newTimestamp
+                            }
+                        },
+                        {
+                            returnNewDocument: true
+                        })
+                        .then(result => {
+                            console.log(result)
+                            res.json('Success')
+                        })
+                        .catch(error => console.error(error))
+                })
+                .catch(error => console.error(error))
+
         })
     })
     .catch(error => console.error(error))
