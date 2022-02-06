@@ -23,11 +23,8 @@ MongoClient
         })
         
         app.use(bodyParser.urlencoded({ extended: true }))
-        
-        app.get('/', (req, res) => {
-            res.sendFile(__dirname + '/index.html')
-        })
 
+        // GET
         app.get('/notifications', (req, res) => {
             db.collection('notifications').find().toArray()
                 .then(results => {
@@ -37,6 +34,7 @@ MongoClient
                 .catch(error => console.error(error))
         })
         
+        // POST
         app.post('/notifications', (req, res) => {
             notificationsCollection.insertOne(req.body)
                 .then(result => {
@@ -46,24 +44,26 @@ MongoClient
                 .catch(error => console.error(error))
         })
 
+        // PUT
         app.put('/notifications', (req, res) => {
             notificationsCollection.findOneAndUpdate(
                 { name: req.body.name },
                 {
-                  $set: {
-                    name: req.body.name,
-                    notification: req.body.notification
-                  }
+                    $set: {
+                        name: req.body.name,
+                        notification: req.body.notification
+                    }
                 },
                 {
                     upsert: true
-                }
-              )
-                .then(result => console.log(result))
+                })
+                .then(result => {
+                    console.log(result)
+                })
                 .catch(error => console.error(error))
-            console.log(req.body)
         })
 
+        // DELETE
         app.delete('/notifications', (req, res) => {
             notificationsCollection.deleteOne(
                 { name: req.body.name }

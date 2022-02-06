@@ -3,50 +3,114 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Notifications App</title>
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   </head>
 
   <body>
-    <h1>Notifications center</h1>
+    <div class="container-fluid">
+      <!-- TITLE -->
+      <br>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="card">
+            <div class="card-header">Notifications Center Admins</div>
+            <div class="card-body">
+              <li>Gabriel Boroghină</li>
+              <li>Mihaela Catrina</li>
+              <li>Andrei Smarandoiu</li>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
 
-    <form action="/notifications" method="POST">
-      <input type="text" placeholder="name" name="name" />
-      <input type="text" placeholder="notification" name="notification" />
-      <button type="submit">Submit</button>
-    </form>
+      <!-- POST -->
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="card">
+            <div class="card-header">
+              POST notifications
+            </div>
+            <div class="card-body">
+              <form action="/notifications" method="POST">
+                <input class="form-control" type="text" placeholder="eg: MorningNotification" name="name" />
+                <input class="form-control" type="text" placeholder="eg: Wake up at 08:00 and prepare for the day!" name="notification" />
+                <br>
+                <button class="btn btn-primary">Send</button>
+              </form>
+            </div>
+          </div>
+        </div>
 
-    <h2> Notifications </h2>
+        <!-- PUT -->
+        <div class="col-sm-4">
+          <div class="card">
+            <div class="card-header">PUT notifications</div>
+            <div class="card-body">
+              <p>
+                Update a notification by selecting notification name and a new body for the notification.
+                If the name does not exist, a new notification is created.
+              </p>
+              <input id="namePut" class="form-control" type="text" placeholder="eg: MorningNotification" name="namePut" />
+              <input id="notificationPut" class="form-control" type="text" placeholder="eg: Wake up at 08:00 and prepare for the day!" name="notificationPut" />
+              <br>
+              <button id="update_button" class="btn btn-primary">Update</button>
+            </div>
+          </div>
+        </div>
 
-    <ul class="notifications">
-      <!-- Loop through notifications -->
-      <% for(var i = 0; i < notifications.length; i++) {%>
-        <li class="notifications">
-          <!-- Output name from the iterated notifications object -->
-          <span><%= notifications[i].name %></span>:
-          <!-- Output notification from the iterated notifications object -->
-          <span><%= notifications[i].notification %></span>
-        </li>
-      <% } %>
-    </ul>
-    
-    <div>
-        <h2>Update</h2>
-        <p>
-          Update the body of a notification.
-        </p>
-        <button id="update_button">Update</button>
+        <!-- DELETE -->
+        <div class="col-sm-4">
+          <div class="card">
+            <div class="card-header">DEL notifications</div>
+            <div class="card-body">
+              <p>
+                Delete a notification based on the provided name.
+              </p>
+              <input id="nameDelete" class="form-control" type="text" placeholder="eg: MorningNotification" name="nameDelete" />
+              <br>
+              <button id="delete-button" class="btn btn-primary">Delete</button>
+              <div id="message"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
+      <!-- GET -->
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="card">
+            <div class="card-header">
+              GET notifications
+            </div>
+            <div class="card-body">
+              <ul class="notifications">
+                <% for(var i = 0; i < notifications.length; i++) {%>
+                  <li class="notifications">
+                    <b>Name: </b>
+                    <span><%= notifications[i].name %></span>
+                    <br>
+                    <b> Body: </b>
+                    <span><%= notifications[i].notification %></span>
+                    <br>
+                  </li>
+                  <br>
+                <% } %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
     </div>
-
-    <div>
-        <h2>Delete</h2>
-        <p>
-          Delete a notification.
-        </p>
-        <button id="delete-button">Delete</button>
-    </div>
-
-    <div id="message"></div>
 
     <script src="main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
   </body>
 </html>
