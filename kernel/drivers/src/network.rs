@@ -113,9 +113,9 @@ impl<'a> SyscallDriver for Network<'a> {
                                     } else {
                                         // GET
                                         &buffer[0..5].copy_from_slice("GET  ".as_bytes());
-                                        buffer[5 + address.len()] = '\n' as u8;
+                                        &buffer[5 + address.len()..9 + address.len()].copy_from_slice("\r\n\r\n".as_bytes());
 
-                                        if let Err((error, buffer)) = self.uart.transmit_buffer(buffer, 5 + address.len() + 1) {
+                                        if let Err((error, buffer)) = self.uart.transmit_buffer(buffer, 5 + address.len() + 5) {
                                             self.buffer.replace(buffer);
                                             Err(error)
                                         }
@@ -277,8 +277,34 @@ impl<'a> ReceiveClient for Network<'a> {
                             self.state.set(NetworkState::Idle);
                         }
                     } else {
-                        let _ = self.grant_access.enter(process_id, |_app_storage, upcalls_table| {
-                            let _ = upcalls_table.schedule_upcall(0, (0, rx_len, 0));
+                        let _ = self.grant_access.enter(process_id, |app_storage, upcalls_table| {
+                            let mut has_body = false;
+                            let mut body_offset: usize = 0;
+
+                            let _res = app_storage.data_in.mut_enter(|data_in| {
+                                for i in 0..data_in.len() - 3 {
+                                    if data_in[i].get() == 0 {
+                                        break;
+                                    }
+                                    if data_in[i].get() == '\r' as u8 && data_in[i + 1].get() == '\n' as u8 && data_in[i + 2].get() == '\r' as u8 && data_in[i + 3].get() == '\n' as u8 {
+                                        // "\r\n\r\n" delimits the headers section from the body of the response
+                                        has_body = true;
+                                        body_offset = i + 4;
+                                        break;
+                                    }
+                                }
+                                // Keep only the body in the response buffer; Shift body content to the beginning of the buffer
+                                if has_body {
+                                    for i in body_offset..data_in.len() {
+                                        data_in[i - body_offset].set(data_in[i].get());
+                                    }
+                                }
+                            });
+                            if !has_body {
+                                let _ = upcalls_table.schedule_upcall(0, (418, 0, 0));
+                            } else {
+                                let _ = upcalls_table.schedule_upcall(0, (0, rx_len, 0));
+                            }
                         });
 
                         // Finished reading the response; reset the state

@@ -2,28 +2,38 @@
 #include "tock.h"
 #include "network.h"
 
+typedef struct response {
+    bool done;
+    int status;
+} response;
+
 static void request_done(int status, int len, int unused, void* ud) {
-    bool* done = (bool*)ud;
-    *done = true;
+    response* res = (response*) ud;
+    res->done = true;
+    res->status = status;
 }
 
-char* network_get(const char *url) {
+char* network_get(const char *url, int *status) {
+    *status = 0;
     const size_t res_buf_size = 1024;
     char* data_buffer = (char*) calloc(res_buf_size, sizeof(char));
     if (data_buffer != NULL)
     {
-        bool done = false;
+        response res = { false, 0 };
         allow_ro_return_t ret_allow = allow_readonly(DRIVER_NUM_NETWORK, 0, url, strlen(url));
         if (ret_allow.status == TOCK_STATUSCODE_SUCCESS) {
             allow_rw_return_t ret_allow_buffer = allow_readwrite(DRIVER_NUM_NETWORK, 0, data_buffer, res_buf_size);
             if (ret_allow_buffer.status == TOCK_STATUSCODE_SUCCESS) {
-                subscribe_return_t ret_subscribe = subscribe(DRIVER_NUM_NETWORK, 0, request_done, &done);
+                subscribe_return_t ret_subscribe = subscribe(DRIVER_NUM_NETWORK, 0, request_done, &res);
                 if (ret_subscribe.status == TOCK_STATUSCODE_SUCCESS)
                 {
                     syscall_return_t sys = command(DRIVER_NUM_NETWORK, 1, 0, 0);
                     if (sys.type == TOCK_SYSCALL_SUCCESS)
                     {
-                        yield_for(&done);
+                        yield_for(&res.done);
+                        *status = res.status;
+                        if (*status != 0)
+                            return NULL;
                     }
                 }
             }

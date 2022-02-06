@@ -24,7 +24,8 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
     if (btn_num == 0)
     {
       // Button A: perform a GET request
-      char* data = network_get("http://www.google.com/");
+      int status;
+      char* data = network_get("http://192.168.100.62:3000/", &status);
       if (data != NULL)
       {
         print_formatted_text(data);
@@ -32,7 +33,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
       }
       else
       {
-        printf("No response\n");
+        printf("No response. Error code: %i\n", status);
       }
     }
     else
