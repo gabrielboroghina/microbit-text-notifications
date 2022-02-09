@@ -1,6 +1,7 @@
 import serial
 import re
 import socket
+import json
 from time import sleep
 
 # Open serial port to Microbit
@@ -10,25 +11,37 @@ while True:
     # Wait for input from Microbit
     req = ser.readline()
     req_str = req.decode("utf-8")
-    print(req_str)
+    print(req_str.strip())
 
     # Check if the input is an HTTP request to be performed by the proxy
     if re.match("(GET)|(POST)", req_str):
-        print("> Performing HTTP API request...")
+        if re.match("(POST)", req_str):
+            # Wait for the body
+            req += ser.readline()
+            req += ser.readline()
+            req += ser.readline()
+            req += ser.readline()
 
-        host_match = re.search("https?:\/\/([\S]*)/.*", req_str)
+        print("> Performing HTTP API request...")
+        print(req)
+
+        host_match = re.search("https?:\/\/([^\s:]*)(\:([0-9]*))?.*", req_str)
+        if host_match is None:
+            print("> Error: Invalid URL")
+            continue
         host = host_match.group(1)
-        port = 80
-        print("Host: " + host)
+        port = int(host_match.group(3) or 80)
+        print("Host:", host, "Port:", port)
 
         # Open TCP connection and send the HTTP request
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.settimeout(1)
-        client.connect((host, port))
-        client.send(req)
 
         res = b''
         try:
+            client.connect((host, port))
+            client.send(req + b'\r\n')
+
             # Read the response in chunks
             while True:
                 data = client.recv(1024)
@@ -37,13 +50,11 @@ while True:
                 res += data
         except Exception as e:
             # No response data
+            print("> Error:", e)
             pass
 
         print("> Received HTTP API response:\n")
-        # print(res)
-
-        # mock server response
-        print("DOHOMEWORK")
+        print(res)
 
         # Send the response to Microbit
         num = 0
@@ -52,8 +63,6 @@ while True:
             ser.flush()
             sleep(0.001)  # Small delay so that we don't overflow the Microbit's serial buffer
             num += 1
-            if num == 100:  # TODO: Remove this limit
-                break
 
         # Send termination byte
         ser.write(b'\0')
