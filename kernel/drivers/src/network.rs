@@ -90,16 +90,16 @@ impl<'a> SyscallDriver for Network<'a> {
                                         app_storage.data_out.enter(move |data_out| {
 
                                             let len1 = 5 + address.len();
-                                            let len2 = len1 + 51 + data_out.len();
+                                            let len2 = len1 + 57 + data_out.len();
 
                                             if len2 + 2 <= buffer.len() {
 
                                                 &buffer[0..5].copy_from_slice("POST ".as_bytes());
-                                                &buffer[len1..len1 + 51].copy_from_slice("\r\nContent-Type: text/plain\r\nContent-Length: 000\r\n\r\n".as_bytes());
-                                                buffer[len1 + 44] = (data_out.len() / 100) as u8 + '0' as u8;
-                                                buffer[len1 + 45] = (data_out.len() / 10 % 10) as u8 + '0' as u8;
-                                                buffer[len1 + 46] = (data_out.len() % 10) as u8 + '0' as u8;
-                                                data_out.copy_to_slice(&mut buffer[len1 + 51..len2]);
+                                                &buffer[len1..len1 + 57].copy_from_slice("\r\nContent-Type: application/json\r\nContent-Length: 000\r\n\r\n".as_bytes());
+                                                buffer[len1 + 50] = (data_out.len() / 100) as u8 + '0' as u8;
+                                                buffer[len1 + 51] = (data_out.len() / 10 % 10) as u8 + '0' as u8;
+                                                buffer[len1 + 52] = (data_out.len() % 10) as u8 + '0' as u8;
+                                                data_out.copy_to_slice(&mut buffer[len1 + 57..len2]);
                                                 &buffer[len2..len2 + 2].copy_from_slice("\r\n".as_bytes());
 
                                                 if let Err((error, buffer)) = self.uart.transmit_buffer(buffer, len2 + 2) {
