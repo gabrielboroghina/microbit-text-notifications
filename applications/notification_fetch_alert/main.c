@@ -103,15 +103,19 @@ static void get_notifications()
         {
             print_formatted_text(name);
             notify();
-            display_text(name, single, 400);
-            free(data);
+            for (int i = 0; i < 3; i++) {
+                display_text(name, single, 400);
+                delay_ms(2000);
+            }
+            free(name);
         }
         else
         {
             printf("No new notification\n");
         }
 
-        delay_ms(40000);
+        free(data);
+        delay_ms(35000);
     } while (true);
 }
 
