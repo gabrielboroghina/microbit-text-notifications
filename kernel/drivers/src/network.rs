@@ -259,6 +259,8 @@ impl<'a> ReceiveClient for Network<'a> {
         match rval {
             Ok(()) => {
                 if let NetworkState::Requesting(process_id) = self.state.get() {
+
+                    // Set the current received byte in the response buffer
                     let _ = self.grant_access.enter(process_id, |app_storage, _upcalls_table| {
                         let _res = app_storage.data_in.mut_enter(|data_in| {
                             if rx_buffer.len() <= data_in.len() {
@@ -283,16 +285,21 @@ impl<'a> ReceiveClient for Network<'a> {
                             self.state.set(NetworkState::Idle);
                         }
                     } else {
+                        // All bytes read
                         let _ = self.grant_access.enter(process_id, |app_storage, upcalls_table| {
                             let mut has_body = false;
                             let mut body_offset: usize = 0;
 
+                            // Extract the response body
                             let _res = app_storage.data_in.mut_enter(|data_in| {
                                 for i in 0..data_in.len() - 3 {
                                     if data_in[i].get() == 0 {
                                         break;
                                     }
-                                    if data_in[i].get() == '\r' as u8 && data_in[i + 1].get() == '\n' as u8 && data_in[i + 2].get() == '\r' as u8 && data_in[i + 3].get() == '\n' as u8 {
+                                    if data_in[i].get() == '\r' as u8 && 
+                                       data_in[i + 1].get() == '\n' as u8 && 
+                                       data_in[i + 2].get() == '\r' as u8 && 
+                                       data_in[i + 3].get() == '\n' as u8 {
                                         // "\r\n\r\n" delimits the headers section from the body of the response
                                         has_body = true;
                                         body_offset = i + 4;
@@ -306,6 +313,7 @@ impl<'a> ReceiveClient for Network<'a> {
                                     }
                                 }
                             });
+
                             if !has_body {
                                 let _ = upcalls_table.schedule_upcall(0, (418, 0, 0));
                             } else {
