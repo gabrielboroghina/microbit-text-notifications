@@ -1,11 +1,11 @@
 import serial
 import re
 import socket
-import json
 from time import sleep
 
 # Open serial port to Microbit
-ser = serial.Serial('/dev/cu.usbmodem14202', baudrate=115200)
+ser = serial.Serial('/dev/ttyACM0', baudrate=115200)
+# ser = serial.Serial('/dev/cu.usbmodem14202', baudrate=115200)
 
 while True:
     # Wait for input from Microbit

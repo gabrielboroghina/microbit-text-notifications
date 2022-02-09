@@ -7,6 +7,7 @@
 #include "button.h"
 #include "network.h"
 #include "led_matrix_text.h"
+#include "../config.h"
 
 static int numerical_value = 0;
 static int intervals_index = 0;
@@ -104,7 +105,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
                 char *body = (char *)calloc(33 + 15, sizeof(char));
                 sprintf(body, "{\"snooze\":%d}", snooze_value);
 
-                network_post("http://192.168.100.67:3000/api/snooze/", body);
+                network_post(API_ENDPOINT "/api/snooze", body);
                 reset();
                 free(body);
             }

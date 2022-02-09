@@ -6,6 +6,7 @@
 #include "tock.h"
 #include "network.h"
 #include "button.h"
+#include "config.h"
 
 void print_formatted_text(char* text) {
   printf("\n\nAPI response:");
@@ -25,7 +26,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
     {
       // Button A: perform a GET request
       int status;
-      char* data = network_get("http://192.168.100.62:3000/", &status);
+      char* data = network_get(API_ENDPOINT, &status);
       if (data != NULL)
       {
         print_formatted_text(data);
@@ -41,7 +42,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
       // Button B: perform a POST request
       char* body_buffer = (char*) calloc(1024, sizeof(char));
       strcpy(body_buffer, "test body");
-      network_post("http://192.168.100.62:3000/", body_buffer);
+      network_post(API_ENDPOINT, body_buffer);
       free(body_buffer);
     }
   }

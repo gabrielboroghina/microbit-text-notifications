@@ -10,6 +10,7 @@
 #include "button.h"
 #include "led_matrix_text.h"
 #include <buzzer.h>
+#include "../config.h"
 
 static void print_formatted_text(char *text)
 {
@@ -95,7 +96,7 @@ static void get_notifications()
     do
     {
         int status;
-        char *data = network_get("http://192.168.100.67:3000/api/notifications", &status);
+        char *data = network_get(API_ENDPOINT "/api/notifications", &status);
         char *name = substract_notification_name(&data);
 
         if (name != NULL)
