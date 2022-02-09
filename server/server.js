@@ -27,9 +27,8 @@ MongoClient.connect(connString, { useUnifiedTopology: true })
 
     // UI (method: GET)
     app.get("/notifications", (req, res) => {
-      const timeRef = (Date.now() / 1000 - pollInterval) | 0;
       db.collection("notifications")
-        .find({ timestamp: { $gt: timeRef } })
+        .find()
         .toArray()
         .then((results) => {
           console.log(results);
