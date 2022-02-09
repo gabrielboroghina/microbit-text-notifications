@@ -11,71 +11,117 @@
 #include "led_matrix_text.h"
 #include <buzzer.h>
 
-static void print_formatted_text(char* text) {
-  printf("\n\nAPI response:");
-  printf("\n------------------------------------------------------------\n");
-  printf("%s", text);
-  printf("\n------------------------------------------------------------\n");
+static void print_formatted_text(char *text)
+{
+    printf("\n\nAPI response:");
+    printf("\n------------------------------------------------------------\n");
+    printf("%s", text);
+    printf("\n------------------------------------------------------------\n");
 }
 
-static void notify() {
+static char *substract_notification_name(char **data)
+{
+    if (*data != NULL)
+    {
+        char *ptr = *data;
 
-    if (!buzzer_exists()) {
-        printf ("There is no available buzzer\n");
+        ptr = strstr(ptr, "\"name\"");
+        if (ptr == NULL)
+        {
+            return NULL;
+        }
+
+        ptr = strchr(ptr, ':');
+        if (ptr == NULL)
+        {
+            return NULL;
+        }
+
+        ptr += 2;
+        char *end_ptr = ptr;
+        end_ptr = strchr(end_ptr, ',');
+        end_ptr -= 2;
+        int len = (int)(end_ptr - ptr) + 1;
+
+        char *name = (char *)calloc(len + 1, sizeof(char));
+        strncpy(name, ptr, len);
+        return name;
+    }
+
+    return NULL;
+}
+
+static void notify()
+{
+
+    if (!buzzer_exists())
+    {
+        printf("There is no available buzzer\n");
         return;
     }
 
     // Notes in the form of (note_frequency, note_delay in musical terms)
-    static int notification_bip[] = { 
-        NOTE_G4,8, NOTE_C4,8, NOTE_DS4,16, NOTE_F4,16, NOTE_G4,8, NOTE_C4,8
-    };
-
+    static int notification_bip[] = {
+        NOTE_G4, 8, NOTE_C4, 8, NOTE_DS4, 16, NOTE_F4, 16, NOTE_G4, 8, NOTE_C4, 8};
 
     static int TEMPO = 95;
 
     int notes = sizeof(notification_bip) / sizeof(notification_bip[0]) / 2;
     int wholenote = (60000 * 4) / TEMPO;
-    for (int note = 0; note < notes * 2; note = note + 2) {
+    for (int note = 0; note < notes * 2; note = note + 2)
+    {
         // calculates the duration of each note
         int divider = notification_bip[note + 1];
         int note_duration = 0;
-        if (divider > 0) {
+        if (divider > 0)
+        {
             // regular note, just proceed
             note_duration = (wholenote) / divider;
-        } else if (divider < 0) {
+        }
+        else if (divider < 0)
+        {
             // dotted notes are represented with negative durations!!
-            note_duration  = (wholenote) / abs(divider);
+            note_duration = (wholenote) / abs(divider);
             note_duration *= 1.5; // increases the duration in half for dotted notes
         }
 
         // we only play the note for 90% of the duration, leaving 10% as a pause
         tone_sync(notification_bip[note] * 3, note_duration * 0.9);
-
-        //delay_ms(note_duration);
     }
 }
 
 static void get_notifications()
 {
-    do {
-        char* data = network_get("http://www.google.com/");
-        if (data != NULL) {
-            print_formatted_text(data);
+    do
+    {
+        int status;
+        char *data = network_get("http://192.168.100.67:3000/api/notifications", &status);
+        char *name = substract_notification_name(&data);
+
+        if (name != NULL)
+        {
+            print_formatted_text(name);
             notify();
-            display_text("DO YOUR HOMEWORK", single, 400);
+            display_text(name, single, 400);
             free(data);
-        } else {
+        }
+        else
+        {
             printf("No new notification\n");
         }
 
-        delay_ms(60000);
+        delay_ms(40000);
     } while (true);
 }
 
-int main(void) {
-    if (driver_exists(DRIVER_NUM_NETWORK) && driver_exists(DRIVER_NUM_LED_TEXT)) {
+int main(void)
+{
+    if (driver_exists(DRIVER_NUM_NETWORK) && driver_exists(DRIVER_NUM_LED_TEXT))
+    {
         get_notifications();
-    } else {
+    }
+    else
+    {
         printf("No network or led matrix driver\n");
     }
     return 0;
