@@ -26,7 +26,7 @@ static char *substract_notification_name(char **data)
     {
         char *ptr = *data;
 
-        ptr = strstr(ptr, "\"name\"");
+        ptr = strstr(ptr, "\"notification\"");
         if (ptr == NULL)
         {
             return NULL;
