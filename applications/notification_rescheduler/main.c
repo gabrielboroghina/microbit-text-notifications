@@ -80,7 +80,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
 
         // convert numerical value to string [pData]
         // compose displayed text
-        sprintf(pData, "%d%c\0", numerical_value, intervals[intervals_index]);
+        sprintf(pData, "%d%c", numerical_value, intervals[intervals_index]);
         printf("%s\n", pData);
 
         display_text(pData, repeat, 700);
@@ -88,7 +88,7 @@ static void button_callback(int btn_num, int val, int arg2, void *ud)
         if (btn_num == 2 /* Touch button*/)
         {
             printf("Touch Button pressed\n");
-            if (commit_number == 2)
+            if (commit_number == 1)
             {
                 // snooze interval uses seconds
                 int snooze_value = numerical_value;
